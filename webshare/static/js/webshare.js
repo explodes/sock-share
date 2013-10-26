@@ -18,7 +18,7 @@ function WebShare(host, port, debug) {
     this._callbacks = {};
 
     // Misc. callbacks
-    this.onrelay = undefined; // information was relayed :: f(true, 'SUCCESS', packageObject)
+    this.onrelay = undefined; // information was relayed :: f(true, 'RELAY_OK', packageObject)
     this.oncommanderror = undefined; // invalid command stuff :: f(false, 'COMMAND_ERROR', {error: message})
     this.onunpair = undefined; // involuntary unpair :: f(success, code, null)
 
