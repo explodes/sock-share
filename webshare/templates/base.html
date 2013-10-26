@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
+        {% block style %}{% endblock %}
+        <script type="application/javascript" src="{{ STATIC_URL }}js/webshare.js"></script>
+        {% block scripts %}{% endblock %}
+    </head>
+    <body>
+
+    {% block content %}{% endblock %}
+
+    </body>
+
+</html>
