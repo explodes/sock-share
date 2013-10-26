@@ -67,13 +67,16 @@ class Pair(SpecialCommand):
             yield self.respond_fail(client, code=enums.CODE_INVALID_KEY)
             return
 
+        if target_key == client.key:
+            yield self.respond_fail(client, code=enums.CODE_CANNOT_SELF_PAIR)
+            return
+
         target = get_pool().get(target_key)
         if target is None:
             yield self.respond_fail(client, code=enums.CODE_TARGET_NOT_FOUND)
             return
 
-        client.paired_to = target
-        target.paired_to = weakref.ref(client)
+        client.pair_with(target)
 
         print 'Client %s paired with client %s' % (client.key, target.key)
 
@@ -88,8 +91,7 @@ class Unpair(SpecialCommand):
             yield self.respond_fail(client, code=enums.CODE_NOT_PAIRED)
             return
 
-        client.paired_to = None
-        paired_to.paired_to = None
+        client.unpair()
 
         print 'Client %s unpaired with client %s' % (client.key, paired_to.key)
 
@@ -106,6 +108,7 @@ class Relay(SpecialCommand):
 
         print 'Client %s will relay to client %s: %s' % (client.key, paired_to.key, arguments)
 
+        yield self.respond_success(client, code=enums.CODE_SUCCESS, body=None)
         yield self.respond_success(paired_to, code=enums.CODE_SUCCESS, body=arguments)
 
 

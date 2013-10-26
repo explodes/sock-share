@@ -1,6 +1,6 @@
 import json
 import random
-import threading
+import weakref
 
 from autobahn import websocket
 from twisted.internet import reactor
@@ -55,15 +55,14 @@ class WebShareServerProtocol(websocket.WebSocketServerProtocol):
             return self.onCommandError(enums.ERROR_UNKNOWN_COMMAND, echo)
 
     def connectionLost(self, reason):
-        print 'Client %s lost' % self.key
-        if self.paired_to is not None:
-            print 'Unpairing with Client %s' % self.paired_to.key
+        partner = self.get_paired_partner()
+        if partner is not None:
             self.handleSpecialCommand('unpair', None, None)
         del WebShareServerProtocolPool[self.key]
 
     def handleSpecialCommand(self, command_name, args, echo):
         command = SpecialCommandRegistry[command_name]
-        responses = command.perform_command(self, self.paired_to, args)
+        responses = command.perform_command(self, self.get_paired_partner(), args)
         for target, response in responses:
             self.sendResponse(target, command_name, response, echo)
 
@@ -83,6 +82,20 @@ class WebShareServerProtocol(websocket.WebSocketServerProtocol):
             print 'Error:', type(error), error
         self.handleSpecialCommand('error', {'error': message}, echo)
 
+    def pair_with(self, other):
+        other.paired_to = weakref.ref(self)
+        self.paired_to = other
+
+    def get_paired_partner(self):
+        if isinstance(self.paired_to, weakref.ref):
+            return self.paired_to()
+        return self.paired_to
+
+    def unpair(self):
+        partner = self.get_paired_partner()
+        if partner:
+            partner.paired_to = None
+        self.paired_to = None
 
 def main(host, port):
     url = "ws://%s:%s" % (host, port)

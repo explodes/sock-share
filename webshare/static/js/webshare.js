@@ -37,6 +37,18 @@ WebShare.prototype.onmessage = function (msg) {
         , callbackId = echo ? echo.callbackId : null
         , callback
         ;
+
+
+    // Track pair status - must happen before callbacks
+    if (ok && code == 'SUCCESS') {
+        if (command == 'pair') {
+            this.pairedTo = body.with;
+        } else if (command == 'unpair') {
+            this.pairedTo = undefined;
+        }
+    }
+    
+    // Figure out what callbacks go where
     if (code == 'COMMAND_ERROR') {
         if (this.oncommanderror) this.oncommanderror(ok, code, body);
     } else if (command == 'relay') {
@@ -51,14 +63,6 @@ WebShare.prototype.onmessage = function (msg) {
         if (this.onunpair) this.onunpair(ok, code, body);
     }
 
-    // Track pair status
-    if (ok && code == 'SUCCESS') {
-        if (command == 'pair') {
-            this.pairedTo = body.with;
-        } else if (command == 'unpair') {
-            this.pairedTo = undefined;
-        }
-    }
 }
 
 WebShare.prototype._generateCallbackId = function () {
@@ -67,7 +71,7 @@ WebShare.prototype._generateCallbackId = function () {
         ;
     while (true) {
         id = '';
-        for (var i = 0; i < 7; i++) {
+        for (var i = 0; i < 3; i++) {
             id += possible.charAt(Math.floor(Math.random() * possible.length));
         }
         if (!this._callbacks[id]) {
@@ -90,7 +94,7 @@ WebShare.prototype.pair = function (target, callback) {
     this._command('pair', {target: target}, callback);
 }
 
-WebShare.prototype.unpair = function (message, callback) {
+WebShare.prototype.unpair = function (callback) {
     this._command('unpair', undefined, callback);
 }
 
