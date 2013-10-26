@@ -33,9 +33,6 @@ WebShare.prototype.onmessage = function (msg) {
         , callbackId = echo.callbackId
         , callback
         ;
-
-    console.log(callbackId, this.callbacks);
-
     if (code == 'COMMAND_ERROR') {
         if (self.oncommanderror) self.oncommanderror(ok, code, body);
     } else if (command == 'relay') {
@@ -69,7 +66,6 @@ WebShare.prototype._command = function (command, body, callback) {
         , package = JSON.stringify(message)
         ;
     this.callbacks[callbackId] = callback;
-    console.log("OUT", package);
     this.socket.send(package);
 }
 
