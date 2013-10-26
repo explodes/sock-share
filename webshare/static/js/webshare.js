@@ -47,22 +47,22 @@ WebShare.prototype.onmessage = function (msg) {
             this.pairedTo = undefined;
         }
     }
-    
+
     // Figure out what callbacks go where
     if (code == 'COMMAND_ERROR') {
+        // if this gets called, file an issue or submit a pull request
         if (this.oncommanderror) this.oncommanderror(ok, code, body);
-    } else if (command == 'relay') {
+    } else if (command == 'relay' && code == 'RELAY_OK') {
+        // We got ourselves a relay!
         if (this.onrelay) this.onrelay(ok, code, body);
-    } else if (callbackId) {
-        callback = this._callbacks[callbackId];
-        if (callback) {
-            callback(ok, code, body);
-        }
-    } else if (command == 'unpair') {
+    } if (command == 'unpair' && !callbackId) {
         // involuntary unpair (unpair w/o callbackId)
         if (this.onunpair) this.onunpair(ok, code, body);
+    } else {
+        callback = this._callbacks[callbackId];
+        delete this._callbacks[callbackId];
+        if (callback) callback(ok, code, body);
     }
-
 }
 
 WebShare.prototype._generateCallbackId = function () {
@@ -104,4 +104,8 @@ WebShare.prototype.relay = function (message, callback) {
 
 WebShare.prototype.getKey = function (callback) {
     this._command('key', undefined, callback);
+}
+
+WebShare.prototype.close = function () {
+    this._socket.close();
 }

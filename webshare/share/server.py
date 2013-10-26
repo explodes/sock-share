@@ -63,8 +63,12 @@ class WebShareServerProtocol(websocket.WebSocketServerProtocol):
     def handleSpecialCommand(self, command_name, args, echo):
         command = SpecialCommandRegistry[command_name]
         responses = command.perform_command(self, self.get_paired_partner(), args)
-        for target, response in responses:
-            self.sendResponse(target, command_name, response, echo)
+        for should_echo, target, response in responses:
+            if not should_echo:
+                send_echo = None
+            else:
+                send_echo = echo
+            self.sendResponse(target, command_name, response, send_echo)
 
     def handleCommand(self, command_name, args, echo):
         command = CommandRegistry[command_name]
