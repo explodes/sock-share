@@ -72,8 +72,8 @@ class Pair(SpecialCommand):
             yield self.respond_fail(client, code=enums.CODE_TARGET_NOT_FOUND)
             return
 
-        client.pair = target
-        target.pair = weakref.ref(client)
+        client.paired_to = target
+        target.paired_to = weakref.ref(client)
 
         print 'Client %s paired with client %s' % (client.key, target.key)
 
@@ -88,7 +88,7 @@ class Unpair(SpecialCommand):
             yield self.respond_fail(client, code=enums.CODE_NOT_PAIRED)
             return
 
-        client.pair = None
+        client.paired_to = None
         paired_to.paired_to = None
 
         print 'Client %s unpaired with client %s' % (client.key, paired_to.key)

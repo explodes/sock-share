@@ -24,20 +24,6 @@ def gen_key():
             return key
 
 
-def cull_pool():
-    """
-    Periodically drain the pool of finished connections.
-    """
-    ct = 0
-    for key, conn in iter(WebShareServerProtocolPool.items):
-        if not conn.connected:
-            ct += 1
-            del WebShareServerProtocolPool[key]
-    if ct:
-        print 'Removed %d connections...' % ct
-    threading.Timer(10, cull_pool).start()
-
-
 class WebShareServerProtocol(websocket.WebSocketServerProtocol):
     def __init__(self, *args, **kwargs):
         self.key = gen_key()
@@ -67,6 +53,13 @@ class WebShareServerProtocol(websocket.WebSocketServerProtocol):
             self.handleCommand(command_name, args, echo)
         else:
             return self.onCommandError(enums.ERROR_UNKNOWN_COMMAND, echo)
+
+    def connectionLost(self, reason):
+        print 'Client %s lost' % self.key
+        if self.paired_to is not None:
+            print 'Unpairing with Client %s' % self.paired_to.key
+            self.handleSpecialCommand('unpair', None, None)
+        del WebShareServerProtocolPool[self.key]
 
     def handleSpecialCommand(self, command_name, args, echo):
         command = SpecialCommandRegistry[command_name]
@@ -98,4 +91,3 @@ def main(host, port):
     factory.protocol = WebShareServerProtocol
     websocket.listenWS(factory)
     reactor.run()
-    cull_pool()
