@@ -1,0 +1,10 @@
+Django==1.5.5
+Twisted==13.1.0
+autobahn==0.6.4
+distribute==0.6.49
+stevedore==0.12
+virtualenv==1.9.1
+virtualenv-clone==0.2.4
+virtualenvwrapper==4.1.1
+wsgiref==0.1.2
+zope.interface==4.0.5
